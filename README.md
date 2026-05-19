@@ -1,70 +1,63 @@
-# InsiderInfo: Opportunity Intelligence System
-
-> "Success in college often depends on hidden information networks. We make those networks accessible to everyone."
-
-**InsiderInfo** is a verified insider knowledge system for college students. Instead of random social media posts, students share **important actionable intelligence**—like hidden placement pipelines, scholarship deadline extensions, and professor preferences—that normally spreads only through exclusive friend circles.
-
-We are solving the **"Invisible Curriculum"** problem, democratizing access to opportunity intelligence for first-generation and underserved students.
-
----
-
-## 🌟 Unique USPs (Why We Are Different)
-
-* **Hidden “Invisible Curriculum” Solution**: Solves real opportunity inequality for first-generation students.
-* **Structured Opportunity Intelligence**: Not a generic social feed; every tip has urgency, categories, and expiry.
-* **Peer-Verified Trust Layer**: Misinformation is reduced through peer verification and credibility scoring.
-* **Hyper-Personalized Feed**: Content is filtered strictly by college, branch, and year.
-* **Proactive Smart Notifications**: Warns students *before* deadlines close, rather than after they miss them.
-* **Auto-Expiring Knowledge**: Stale and outdated information automatically disappears.
-* **Trust Graph**: Prioritizes reliable contributors and penalizes misinformation.
-* **Academic Calendar-Aware**: Intelligence delivery aligns with placement cycles and exam periods.
-* **Community-Driven Equity**: Converts informal word-of-mouth knowledge into a searchable, institutional memory.
+<div align="center">
+  <img src="https://lucide.dev/api/icon/shield-check?color=%236366f1&size=64" alt="InsiderInfo Logo" />
+  <h1>InsiderInfo</h1>
+  <h3>The Peer-Verified Opportunity Intelligence Network</h3>
+  <p><em>"We convert unspoken institutional knowledge into actionable opportunity intelligence for first-generation students."</em></p>
+</div>
 
 ---
 
-## 🚀 Core Features
+## 🏆 The Problem (The "Invisible Curriculum")
 
-### 1. User Onboarding & Personalization
-Students select their College, Branch, and Year during onboarding. The entire platform tailors the intelligence feed so a CSE 2nd Year student sees coding club recruitments, while a Mechanical 4th Year sees PSU placement opportunities.
+College success isn't just about grades; it's about access to information. *Who is referring for Google STEP? Which professor takes interns without announcing it? What's the hidden backdoor to the coding club?*
 
-### 2. Structured Tip Submission
-Seniors submit intelligence using a highly structured form:
-* Title & Description
-* Category (Placements, Scholarships, Research, etc.)
-* Urgency (Normal, Medium, High)
-* Expiry Date
-* Tags
+Currently, this information flows through **exclusive friend circles**. First-generation and unconnected students miss out entirely. 
 
-### 3. Peer Verification System & Credibility Scoring
-The core trust layer. Users can:
-* ✅ **Verify** a tip
-* ⚠ **Mark Outdated**
-* ❌ **Report Fake**
-
-Every contributor has a **Credibility Score** that increases when their tips are verified and students engage positively, creating a self-regulating ecosystem.
-
-### 4. Smart Notifications & Urgency
-The system proactively alerts users about urgent deadlines based on their personalized profile, ensuring no critical opportunity is missed.
-
-### 5. Advanced Search, Filters, and Bookmarks
-Users can filter the feed by category, urgency, and verification status, and bookmark opportunities for later tracking.
+**InsiderInfo** democratizes this access. We transform informal campus chatter into a structured, verified, and time-sensitive intelligence graph.
 
 ---
 
-## 💻 Tech Stack
+## 🔥 Why This Wins (Core USPs)
 
-* **Frontend**: Next.js 15, React, Tailwind CSS, shadcn/ui
-* **Backend**: FastAPI (Python), SQLAlchemy
-* **Database**: SQLite (Development) / PostgreSQL via Supabase (Production)
-* **Architecture**: RESTful APIs with Pydantic validation
+We didn't build a forum. We built a **Recommendation-Engine-Driven Intelligence Network**.
+
+* **Hyper-Personalized Intelligence Feed**: A CSE 2nd Year student sees internship referral deadlines. A Mechanical 4th Year sees PSU placement cutoff drops. 
+* **Peer Verification + Trust Graph**: This is our strongest engineering USP. Fake/outdated reporting tanks credibility. Only the most reliable voices rise to the top.
+* **Explainable Recommendation Layer**: We don't just show a tip; we tell the user *why* they are seeing it ("Verified by 18 seniors", "Expiring in 5 hours", "Targeted for your branch").
+* **Smart Feed Ranking Algorithm**: The feed isn't chronological. It uses a custom sorting heuristic: `Score = Credibility Weight + Verification Score + Urgency Bonus - Freshness Decay - Expiry Decay`.
+* **Auto-Expiring Knowledge**: Stale information automatically disappears from the active feed, keeping the platform production-grade and relevant.
+* **Proactive Urgency Engine**: Smart notifications alert users *before* deadlines close ("Google STEP closes in 5 hours").
+
+---
+
+## 💻 Technical Architecture & Stack
+
+Built for scale, maintainability, and visual excellence.
+
+### Frontend
+* **Framework**: Next.js 15 / React 19
+* **Styling**: Tailwind CSS v4 + Vanilla CSS (Premium Glassmorphism Design System)
+* **UI/UX**: Vibrant Indigo/Violet Dark Theme, dynamic micro-animations, structured typography (Inter + Sora).
+
+### Backend
+* **Framework**: FastAPI (Python)
+* **Database**: SQLite (Dev) / PostgreSQL via Supabase (Prod)
+* **ORM**: SQLAlchemy
+* **Architecture**: RESTful APIs with Pydantic schema validation. Modular router structure (`tips`, `users`, `verifications`, `notifications`, `analytics`).
+
+---
+
+## 🚀 The "Perfect Demo" Flow
+
+1. **The Hook**: Freshman lands on the premium hero section and signs up, selecting their specific Branch and Year.
+2. **Personalization**: They instantly land on a dynamic dashboard filled with intelligence filtered exactly for them.
+3. **The Urgency**: Live countdown timers pulse for opportunities expiring within 24 hours. A notification dot alerts them to a high-priority scholarship.
+4. **The Trust Engine**: A trusted senior submits a hidden internship tip. Another senior clicks "Verify". The author's Credibility Score updates live, and the tip shoots to the top of the feed via the ranking algorithm.
+5. **The Proof**: The Analytics dashboard shows the active heartbeat of the platform—verified tips, category breakdowns, and a live contributor leaderboard.
 
 ---
 
 ## ⚙️ Running Locally
-
-### Prerequisites
-* Node.js (v18+)
-* Python 3.10+
 
 ### 1. Start the Backend (FastAPI)
 ```bash
@@ -73,9 +66,10 @@ python -m venv venv
 # Windows: .\venv\Scripts\activate
 # Mac/Linux: source venv/bin/activate
 pip install -r requirements.txt
+python seed.py # Seeds the DB with rich, realistic data
 uvicorn app.main:app --reload
 ```
-The backend will run on `http://localhost:8000`.
+*Backend runs on `http://localhost:8000`*
 
 ### 2. Start the Frontend (Next.js)
 ```bash
@@ -83,19 +77,20 @@ cd client
 npm install
 npm run dev
 ```
-The frontend will run on `http://localhost:3000`.
+*Frontend runs on `http://localhost:3000` (or 3001 if 3000 is occupied).*
 
 ---
 
-## 📖 Perfect Demo Flow
+## 🎯 Hackathon Checklist Accomplished
 
-1. **Freshman Signs Up**: Lands on the premium home page and inputs their branch/year.
-2. **Personalized Feed**: Instantly sees intelligence tailored to their profile with "High Priority" chips.
-3. **Senior Submits Tip**: A trusted senior submits a structured tip about a hidden internship.
-4. **Peer Verification**: Another senior verifies the tip, and the original author's Credibility Score updates live.
-5. **Smart Notification**: The freshman receives an urgent notification that the internship deadline is approaching.
-6. **Bookmark**: The opportunity is saved to their profile.
+- [x] **Real backend APIs** (FastAPI)
+- [x] **Personalized feed** (Branch/Year filtering)
+- [x] **Verification system** (Verify, Outdated, Fake reporting)
+- [x] **Credibility engine** (Auto-updating trust graph & badges)
+- [x] **Beautiful UI** (Modern glassmorphism, animated gradients)
+- [x] **Smart feed ranking algorithm** (Urgency + Trust math)
+- [x] **Explainable recommendations** ("Why am I seeing this?")
+- [x] **Analytics dashboard** (Live platform KPIs & Leaderboard)
+- [x] **Auto-expiring tips** (Live countdown timers)
 
----
-
-*Built with passion to democratize opportunity and transform unspoken campus knowledge into structured, verified opportunity intelligence.*
+*Built to democratize access to the hidden rules of college success.*

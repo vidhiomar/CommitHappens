@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine
 from app import models
-from app.routers import users, tips, verifications, notifications, saves
+from app.routers import users, tips, verifications, notifications, saves, analytics
 
 # Create db tables
 models.Base.metadata.create_all(bind=engine)
@@ -12,7 +12,7 @@ app = FastAPI(title="Insider Knowledge System API")
 # Setup CORS for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # For dev only
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -23,6 +23,7 @@ app.include_router(tips.router)
 app.include_router(verifications.router)
 app.include_router(notifications.router)
 app.include_router(saves.router)
+app.include_router(analytics.router)
 
 @app.get("/")
 def read_root():

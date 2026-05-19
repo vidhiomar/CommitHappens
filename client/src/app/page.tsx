@@ -1,115 +1,241 @@
 import Link from "next/link"
-import { ArrowRight, ShieldCheck, Zap, BellRing, Target } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { ArrowRight, ShieldCheck, Zap, BellRing, Target, Users, TrendingUp, Star, Lock, Globe } from "lucide-react"
+
+const STATS = [
+  { label: "Tips Verified", value: "847+" },
+  { label: "Active Scholarships", value: "23" },
+  { label: "Expiring Tonight", value: "6" },
+  { label: "Contributors", value: "312" },
+]
+
+const FEATURES = [
+  {
+    icon: Target,
+    title: "Hyper-Personalized Feed",
+    desc: "Only see what matters to you. Filtered by college, branch & year. CSE 2nd year gets intern alerts; Mech 4th year sees PSU tips.",
+    color: "#6366f1",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Peer Verification Engine",
+    desc: "Every tip is verified by real seniors. Fake reports tank credibility scores. Our trust graph ranks the most reliable voices at the top.",
+    color: "#10b981",
+  },
+  {
+    icon: BellRing,
+    title: "Smart Deadline Alerts",
+    desc: "\"Google STEP closes in 5 hours.\" Get warned before opportunities expire — not after. Live countdown timers on every opportunity.",
+    color: "#f59e0b",
+  },
+  {
+    icon: TrendingUp,
+    title: "Smart Ranking Algorithm",
+    desc: "Feed ranked by trust + urgency + freshness − expiry decay. Not chronological noise — intelligent prioritization.",
+    color: "#8b5cf6",
+  },
+  {
+    icon: Lock,
+    title: "Hidden Curriculum Access",
+    desc: "Professor preferences, backdoor club entries, hidden internship portals. The unwritten rules that only senior friend circles know.",
+    color: "#ef4444",
+  },
+  {
+    icon: Star,
+    title: "Contributor Reputation",
+    desc: "Earn badges: Member → Contributor → Trusted Senior → Placement Mentor → Top Contributor. Gamified credibility system.",
+    color: "#f59e0b",
+  },
+]
+
+const DEMO_FLOW = [
+  { step: 1, text: "Freshman signs up & picks branch/year" },
+  { step: 2, text: "Gets personalized dashboard instantly" },
+  { step: 3, text: "Receives urgent scholarship notification" },
+  { step: 4, text: "Senior submits hidden placement tip" },
+  { step: 5, text: "Peers verify → credibility updates live" },
+  { step: 6, text: "Feed ranking changes dynamically" },
+]
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col bg-background selection:bg-primary selection:text-primary-foreground">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md glass">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold tracking-tight">InsiderInfo</span>
+    <div className="flex min-h-screen flex-col bg-background text-foreground selection:bg-primary/30">
+
+      {/* ── Header ──────────────────────────────────────────────────────── */}
+      <header className="sticky top-0 z-50 w-full glass border-b border-border/50">
+        <div className="max-w-6xl mx-auto flex h-16 items-center justify-between px-6">
+          <div className="flex items-center gap-2.5">
+            <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center glow-primary">
+              <ShieldCheck className="h-4 w-4 text-white" />
+            </div>
+            <span className="text-xl font-bold tracking-tight gradient-text">InsiderInfo</span>
           </div>
-          <nav className="hidden md:flex gap-6">
-            <Link href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Features</Link>
-            <Link href="#how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">How it Works</Link>
+          <nav className="hidden md:flex gap-8">
+            {["Features", "How It Works", "Impact"].map(item => (
+              <a key={item} href={`#${item.toLowerCase().replace(" ", "-")}`}
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                {item}
+              </a>
+            ))}
           </nav>
-          <div className="flex items-center gap-4">
-            <Link href="/onboarding">
-              <Button variant="ghost" className="hidden sm:inline-flex">Sign In</Button>
+          <div className="flex items-center gap-3">
+            <Link href="/onboarding"
+              className="hidden sm:inline-flex h-9 px-4 rounded-lg border border-border text-sm font-medium items-center text-muted-foreground hover:text-foreground hover:border-primary/50 transition-all">
+              Sign In
             </Link>
-            <Link href="/onboarding">
-              <Button>Get Started</Button>
+            <Link href="/onboarding"
+              className="inline-flex h-9 px-4 rounded-lg bg-primary text-sm font-semibold text-white items-center gap-1.5 hover:bg-primary/90 transition-all glow-primary">
+              Get Started <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
         </div>
       </header>
 
       <main className="flex-1">
-        {/* Hero Section */}
-        <section className="relative overflow-hidden py-24 sm:py-32 lg:py-40">
-          <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-background to-background"></div>
-          <div className="container mx-auto px-4 text-center">
-            <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-sm font-medium text-primary mb-8 backdrop-blur-sm animate-fade-in">
-              <Zap className="mr-2 h-4 w-4" />
-              <span>The #1 Verified Knowledge Network for Students</span>
+
+        {/* ── Hero ────────────────────────────────────────────────────────── */}
+        <section className="relative overflow-hidden hero-gradient min-h-[90vh] flex items-center">
+          {/* Decorative orbs */}
+          <div className="hero-orb-1 absolute -top-32 -left-32 w-96 h-96 rounded-full pointer-events-none animate-float" />
+          <div className="hero-orb-2 absolute -bottom-32 -right-32 w-96 h-96 rounded-full pointer-events-none animate-float" style={{ animationDelay: "2s" }} />
+
+          <div className="max-w-6xl mx-auto px-6 py-24 text-center relative z-10 w-full">
+            {/* Tag line pill */}
+            <div className="inline-flex items-center gap-2 rounded-full glass px-4 py-1.5 text-sm font-medium text-primary mb-8 animate-fade-in">
+              <Zap className="h-3.5 w-3.5" />
+              The #1 Peer-Verified Intelligence Network for Students
             </div>
-            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-              Stop Missing Out on <br className="hidden md:block" />
-              <span className="text-primary">Crucial Opportunities</span>
+
+            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-[1.1] animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
+              Stop Missing Out on<br />
+              <span className="gradient-text">Crucial Opportunities</span>
             </h1>
-            <p className="mx-auto max-w-2xl text-lg md:text-xl text-muted-foreground mb-10 leading-relaxed">
-              A verified insider knowledge system where students share actionable intelligence that normally spreads only through friend circles. Don't be the last to know.
+
+            <p className="mx-auto max-w-2xl text-lg md:text-xl text-muted-foreground mb-10 leading-relaxed animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
+              Students often fail not because they lack talent, but because they lack access to insider knowledge.
+              We convert unspoken campus intelligence into actionable, verified opportunity data.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/onboarding">
-                <Button size="lg" className="w-full sm:w-auto h-14 px-8 text-lg rounded-full group">
-                  Join the Network
-                  <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                </Button>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up" style={{ animationDelay: "0.3s" }}>
+              <Link href="/onboarding"
+                className="flex items-center gap-2 h-14 px-8 text-lg font-semibold rounded-full bg-primary text-white glow-primary hover:bg-primary/90 transition-all group">
+                Join the Network
+                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
               </Link>
-              <Link href="#features">
-                <Button variant="outline" size="lg" className="w-full sm:w-auto h-14 px-8 text-lg rounded-full glass">
-                  Explore Features
-                </Button>
-              </Link>
+              <a href="#features"
+                className="flex items-center gap-2 h-14 px-8 text-lg font-medium rounded-full glass border hover:border-primary/50 transition-all">
+                Explore Features
+              </a>
+            </div>
+
+            {/* Live Stats Bar */}
+            <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto animate-fade-in-up" style={{ animationDelay: "0.4s" }}>
+              {STATS.map(s => (
+                <div key={s.label} className="glass-card rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold gradient-text">{s.value}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{s.label}</div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
 
-        {/* Features Section */}
-        <section id="features" className="py-24 bg-muted/50">
-          <div className="container mx-auto px-4">
+        {/* ── Features ────────────────────────────────────────────────────── */}
+        <section id="features" className="py-28 relative">
+          <div className="max-w-6xl mx-auto px-6">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">Engineered for Action</h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
-                Not another random social feed. We built a structured intelligence system to filter noise and surface high-priority opportunities.
+              <div className="inline-flex items-center gap-2 rounded-full glass px-4 py-1.5 text-sm font-medium text-primary mb-4">
+                <TrendingUp className="h-3.5 w-3.5" /> Engineered for Action
+              </div>
+              <h2 className="text-3xl md:text-5xl font-extrabold mb-4">
+                Not a Social Feed.<br /><span className="gradient-text">An Intelligence System.</span>
+              </h2>
+              <p className="text-muted-foreground max-w-xl mx-auto">
+                Every feature is built to surface high-priority, time-sensitive, peer-verified opportunities before they expire.
               </p>
             </div>
-            <div className="grid md:grid-cols-3 gap-8">
-              <Card className="hover:shadow-lg transition-all hover:-translate-y-1">
-                <CardHeader>
-                  <Target className="h-10 w-10 text-primary mb-4" />
-                  <CardTitle className="text-xl">Personalized Intelligence</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Only see what matters to you. Filtered by your college, branch, and year. No more scrolling through irrelevant mechanical branch posts as a CS student.
-                  </p>
-                </CardContent>
-              </Card>
-              <Card className="hover:shadow-lg transition-all hover:-translate-y-1">
-                <CardHeader>
-                  <ShieldCheck className="h-10 w-10 text-green-500 mb-4" />
-                  <CardTitle className="text-xl">Peer Verified</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Our credibility system ensures high trust. Tips are peer-reviewed. Fake news is reported. Top contributors earn verified badges.
-                  </p>
-                </CardContent>
-              </Card>
-              <Card className="hover:shadow-lg transition-all hover:-translate-y-1">
-                <CardHeader>
-                  <BellRing className="h-10 w-10 text-orange-500 mb-4" />
-                  <CardTitle className="text-xl">Smart Notifications</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Get alerted before deadlines hit. The system proactively warns you about urgent expiring opportunities based on your profile.
-                  </p>
-                </CardContent>
-              </Card>
+
+            <div className="grid md:grid-cols-3 gap-6">
+              {FEATURES.map((f, i) => (
+                <div key={f.title} className="glass-card rounded-2xl p-6 tip-card group" style={{ animationDelay: `${i * 0.08}s` }}>
+                  <div className="h-12 w-12 rounded-xl flex items-center justify-center mb-5"
+                    style={{ background: `${f.color}20`, border: `1px solid ${f.color}40` }}>
+                    <f.icon className="h-6 w-6" style={{ color: f.color }} />
+                  </div>
+                  <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">{f.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── How It Works ────────────────────────────────────────────────── */}
+        <section id="how-it-works" className="py-28 bg-muted/20">
+          <div className="max-w-4xl mx-auto px-6">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-5xl font-extrabold mb-4">
+                The <span className="gradient-text">Perfect Demo Flow</span>
+              </h2>
+              <p className="text-muted-foreground max-w-xl mx-auto">
+                From signup to verified intelligence in under 60 seconds.
+              </p>
+            </div>
+            <div className="relative">
+              {/* Connector line */}
+              <div className="absolute left-6 top-6 bottom-6 w-0.5 bg-gradient-to-b from-primary via-accent to-transparent hidden md:block" />
+              <div className="space-y-4">
+                {DEMO_FLOW.map((item, i) => (
+                  <div key={i} className="flex gap-6 items-start glass-card rounded-2xl p-5 tip-card animate-fade-in-up" style={{ animationDelay: `${i * 0.1}s` }}>
+                    <div className="h-10 w-10 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-primary font-bold text-sm shrink-0 mt-0.5">
+                      {item.step}
+                    </div>
+                    <p className="text-base font-medium pt-1.5 text-foreground/90">{item.text}</p>
+                    {i < DEMO_FLOW.length - 1 && (
+                      <ArrowRight className="h-4 w-4 text-muted-foreground ml-auto mt-2 shrink-0 hidden md:block" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Impact ──────────────────────────────────────────────────────── */}
+        <section id="impact" className="py-28">
+          <div className="max-w-4xl mx-auto px-6 text-center">
+            <Globe className="h-12 w-12 text-primary mx-auto mb-6 animate-float" />
+            <h2 className="text-3xl md:text-5xl font-extrabold mb-6">
+              Democratizing <span className="gradient-text">Opportunity</span>
+            </h2>
+            <p className="text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto mb-10">
+              "We convert unspoken institutional knowledge into actionable opportunity intelligence for first-generation students."
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/onboarding"
+                className="flex items-center justify-center gap-2 h-14 px-8 text-lg font-semibold rounded-full bg-primary text-white glow-primary hover:bg-primary/90 transition-all group">
+                Start Your Journey <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </Link>
             </div>
           </div>
         </section>
       </main>
 
-      <footer className="border-t py-12 bg-background">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-muted-foreground">© 2026 InsiderInfo Platform. Built for the students, by the students.</p>
+      {/* ── Footer ──────────────────────────────────────────────────────────── */}
+      <footer className="border-t border-border/50 py-10">
+        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <div className="h-6 w-6 rounded bg-primary flex items-center justify-center">
+              <ShieldCheck className="h-3 w-3 text-white" />
+            </div>
+            <span className="font-semibold gradient-text">InsiderInfo</span>
+          </div>
+          <p className="text-sm text-muted-foreground text-center">
+            © 2026 InsiderInfo Platform. Built for students, by students. Democratizing opportunity intelligence.
+          </p>
+          <div className="flex gap-4 text-sm text-muted-foreground">
+            <Link href="/onboarding" className="hover:text-foreground transition-colors">Join Now</Link>
+            <Link href="/analytics" className="hover:text-foreground transition-colors">Analytics</Link>
+          </div>
         </div>
       </footer>
     </div>

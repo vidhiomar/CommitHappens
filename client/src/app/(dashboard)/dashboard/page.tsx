@@ -1,222 +1,400 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Clock, ShieldCheck, Bookmark, ShieldAlert, MessageSquare, Info } from "lucide-react"
+import { useState, useEffect, useCallback } from "react"
+import { useSearchParams } from "next/navigation"
+import { ShieldCheck, Bookmark, AlertTriangle, Clock, Info, Filter, Flame, Search, X } from "lucide-react"
+import { CountdownTimer } from "@/components/CountdownTimer"
+import { TrustBadge } from "@/components/TrustBadge"
+
+const CATEGORIES = ["All", "Placements", "Internships", "Scholarships", "Research", "Clubs", "Faculty", "Exams"]
+const URGENCIES  = ["All", "High", "Medium", "Low"]
+
+const CATEGORY_ICONS: Record<string, string> = {
+  All: "🔍", Placements: "💼", Internships: "🚀", Scholarships: "📚",
+  Research: "🔬", Clubs: "🎯", Faculty: "👨‍🏫", Exams: "📝",
+}
 
 export default function DashboardFeed() {
-  const [tips, setTips] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [userContext, setUserContext] = useState({ id: 0, branch: "CSE", year: "2nd Year", college: "" })
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(["All"])
+  const searchParams = useSearchParams()
+  const [tips, setTips]           = useState<any[]>([])
+  const [loading, setLoading]     = useState(true)
+  const [user, setUser]           = useState<any>(null)
+  const [category, setCategory]   = useState("All")
+  const [urgency, setUrgency]     = useState("All")
+  const [verifiedOnly, setVerifiedOnly] = useState(false)
+  const [searchQ, setSearchQ]     = useState("")
+  const [savedIds, setSavedIds]   = useState<Set<number>>(new Set())
+  const [verifiedByMe, setVerifiedByMe] = useState<Map<number, string>>(new Map())
 
   useEffect(() => {
-    const userStr = localStorage.getItem("user")
-    if (userStr) {
-      const u = JSON.parse(userStr)
-      setUserContext(u)
-      fetchTips(u)
-    }
+    const u = JSON.parse(localStorage.getItem("user") ?? "{}")
+    if (u?.id) { setUser(u); fetchTips(u) }
   }, [])
 
-  const fetchTips = async (u: any) => {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/tips/?college=${u.college}&branch=${u.branch}&year=${u.year}`)
-      const data = await res.json()
-      setTips(data)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setLoading(false)
+  // React to search params from layout search bar
+  useEffect(() => {
+    const q = searchParams.get("q")
+    const college = searchParams.get("college")
+    if (q) {
+      setSearchQ(q)
+      fetchSearch(q, college ?? "")
     }
+  }, [searchParams])
+
+  const fetchTips = useCallback(async (u: any, cat = "All", urg = "All", vOnly = false) => {
+    setLoading(true)
+    try {
+      const params = new URLSearchParams()
+      if (u.college) params.set("college", u.college)
+      if (u.branch)  params.set("branch",  u.branch)
+      if (u.year)    params.set("year",     u.year)
+      if (cat !== "All") params.set("category", cat)
+      if (urg !== "All") params.set("urgency",  urg)
+      if (vOnly) params.set("verified_only", "true")
+      const res  = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/tips/?${params}`)
+      const data = await res.json()
+      setTips(Array.isArray(data) ? data : [])
+      setSearchQ("")
+    } catch { setTips([]) }
+    finally { setLoading(false) }
+  }, [])
+
+  const fetchSearch = async (q: string, college: string) => {
+    setLoading(true)
+    try {
+      const params = new URLSearchParams({ q })
+      if (college) params.set("college", college)
+      const res  = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/tips/search?${params}`)
+      const data = await res.json()
+      setTips(Array.isArray(data) ? data : [])
+    } catch { setTips([]) }
+    finally { setLoading(false) }
   }
 
-  const handleVerify = async (tipId: number) => {
-    if (!userContext.id) return
+  const handleCategoryChange = (cat: string) => {
+    setCategory(cat)
+    if (user) fetchTips(user, cat, urgency, verifiedOnly)
+  }
+  const handleUrgencyChange = (urg: string) => {
+    setUrgency(urg)
+    if (user) fetchTips(user, category, urg, verifiedOnly)
+  }
+  const handleVerifiedToggle = () => {
+    const next = !verifiedOnly
+    setVerifiedOnly(next)
+    if (user) fetchTips(user, category, urgency, next)
+  }
+  const clearSearch = () => {
+    setSearchQ("")
+    if (user) fetchTips(user, category, urgency, verifiedOnly)
+  }
+
+  const handleVerify = async (tipId: number, status: string) => {
+    if (!user?.id) return
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/verifications/`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/verifications/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tip_id: tipId, verified_by: userContext.id, status: "Verified" })
+        body: JSON.stringify({ tip_id: tipId, verified_by: user.id, status }),
       })
-      if (res.ok) {
-        // Optimistic update
-        setTips(tips.map(t => {
-          if (t.id === tipId) {
-            return { ...t, verifications: [...t.verifications, { status: "Verified" }] }
-          }
-          return t
-        }))
-      }
-    } catch (err) {
-      console.error(err)
-    }
+      setVerifiedByMe(prev => new Map(prev).set(tipId, status))
+      setTips(prev => prev.map(t => {
+        if (t.id !== tipId) return t
+        const newV = [...t.verifications.filter((v: any) => v.verified_by !== user.id), { status, verified_by: user.id }]
+        return { ...t, verifications: newV }
+      }))
+    } catch {}
   }
 
   const handleBookmark = async (tipId: number) => {
-    if (!userContext.id) return
+    if (!user?.id || savedIds.has(tipId)) return
     try {
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/saves/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tip_id: tipId, user_id: userContext.id })
+        body: JSON.stringify({ tip_id: tipId, user_id: user.id }),
       })
-      alert("Opportunity saved!")
-    } catch (err) {
-      console.error(err)
-    }
+      setSavedIds(prev => new Set(prev).add(tipId))
+    } catch {}
   }
 
-  const toggleCategory = (cat: string) => {
-    if (cat === "All") {
-      setSelectedCategories(["All"])
-      return
-    }
-    
-    let newSelected = selectedCategories.filter(c => c !== "All")
-    if (newSelected.includes(cat)) {
-      newSelected = newSelected.filter(c => c !== cat)
-    } else {
-      newSelected.push(cat)
-    }
-    
-    if (newSelected.length === 0) {
-      newSelected = ["All"]
-    }
-    setSelectedCategories(newSelected)
-  }
-
-  const filteredTips = tips.filter(tip => {
-    if (selectedCategories.includes("All")) return true;
-    return selectedCategories.includes(tip.category);
-  });
-
-  const getExpiresIn = (dateStr: string) => {
-    if (!dateStr) return null;
-    const expiry = new Date(dateStr).getTime()
-    const now = new Date().getTime()
-    const diff = expiry - now
-    if (diff < 0) return "Expired"
-    
-    const hours = Math.floor(diff / (1000 * 60 * 60))
-    if (hours < 24) return `⏳ Expires in ${hours} hours`
-    return `⏳ Expires in ${Math.floor(hours / 24)} days`
-  }
-
-  const getContributorBadge = (score: number) => {
-    if (score >= 90) return "Trusted Senior"
-    if (score >= 70) return "Contributor"
-    return null
-  }
+  const urgentTips = tips.filter(t => {
+    if (!t.expiry_date) return false
+    const h = (new Date(t.expiry_date).getTime() - Date.now()) / 3600000
+    return h > 0 && h < 24
+  })
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-      
-      {/* Sidebar Filters */}
-      <div className="md:col-span-1 space-y-6">
-        <Card className="sticky top-20">
-          <CardHeader>
-            <CardTitle className="text-lg">Your Filter</CardTitle>
-            <CardDescription>{userContext.branch} • {userContext.year}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <h4 className="text-sm font-semibold mb-3">Categories</h4>
-            {["All", "Placements", "Internships", "Research", "Scholarships", "Clubs", "Exams"].map(cat => (
-              <div key={cat} className="flex items-center gap-2">
-                <input 
-                  type="checkbox" 
-                  id={cat} 
-                  checked={selectedCategories.includes(cat)}
-                  onChange={() => toggleCategory(cat)}
-                  className="rounded border-input" 
-                />
-                <label htmlFor={cat} className="text-sm cursor-pointer">{cat}</label>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
+    <div className="space-y-6 animate-fade-in">
 
-      {/* Main Feed */}
-      <div className="md:col-span-3 space-y-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold tracking-tight">Intelligence Feed</h2>
-          <select className="text-sm border rounded-md p-1 bg-background">
-            <option>Smart Ranking</option>
-            <option>Recent</option>
-          </select>
-        </div>
-
-        {loading ? (
-          <div className="text-center py-12"><p className="text-muted-foreground animate-pulse">Loading intelligence network...</p></div>
-        ) : filteredTips.length === 0 ? (
-          <div className="text-center py-12 border rounded-xl bg-muted/20">
-            <p className="text-muted-foreground">No opportunities found for the selected categories.</p>
+      {/* ── Expiring Soon Banner ─────────────────────────────────────────── */}
+      {urgentTips.length > 0 && !searchQ && (
+        <div className="rounded-2xl border border-red-500/30 bg-red-500/8 p-4 flex items-start gap-3 animate-pulse-glow">
+          <Flame className="h-5 w-5 text-red-400 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-semibold text-red-400">
+              🔥 {urgentTips.length} {urgentTips.length === 1 ? "opportunity" : "opportunities"} expiring within 24 hours!
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {urgentTips.map(t => t.title).slice(0, 2).join(" · ")}{urgentTips.length > 2 ? ` +${urgentTips.length - 2} more` : ""}
+            </p>
           </div>
-        ) : (
-          filteredTips.map((tip) => {
-            const verifiedCount = tip.verifications.filter((v:any) => v.status === "Verified").length
-            const expiresIn = getExpiresIn(tip.expiry_date)
-            const badge = getContributorBadge(tip.author.credibility_score)
+        </div>
+      )}
 
-            return (
-              <Card key={tip.id} className="transition-all hover:shadow-md border-muted group relative overflow-hidden">
-                {tip.urgency === "High" && (
-                  <div className="absolute top-0 left-0 w-1 h-full bg-orange-500"></div>
-                )}
-                <CardHeader className="pb-3">
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-1">
-                      <div className="flex flex-wrap gap-2 mb-2">
-                        {tip.urgency === "High" && <Badge variant="urgent">🔥 High Priority</Badge>}
-                        <Badge variant="secondary">{tip.category}</Badge>
-                        {expiresIn && <Badge variant="outline" className="text-orange-600 border-orange-200 bg-orange-50">{expiresIn}</Badge>}
+      {/* ── Search Result Banner ─────────────────────────────────────────── */}
+      {searchQ && (
+        <div className="flex items-center gap-3 rounded-2xl glass px-4 py-3">
+          <Search className="h-4 w-4 text-primary shrink-0" />
+          <p className="text-sm flex-1">
+            <span className="text-muted-foreground">Results for </span>
+            <span className="font-semibold text-foreground">"{searchQ}"</span>
+            <span className="text-muted-foreground"> — {tips.length} found</span>
+          </p>
+          <button onClick={clearSearch} className="text-muted-foreground hover:text-foreground transition-colors">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+        {/* ── Sidebar ─────────────────────────────────────────────────────── */}
+        <aside className="lg:col-span-1 space-y-5">
+          <div className="glass-card rounded-2xl p-5 sticky top-20">
+            {/* Profile context */}
+            {user && (
+              <div className="mb-5 pb-4 border-b border-border/50">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
+                    {user.name?.charAt(0) ?? "U"}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold leading-none">{user.name}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{user.branch} · {user.year}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Filters header */}
+            <div className="flex items-center gap-2 mb-4">
+              <Filter className="h-4 w-4 text-primary" />
+              <span className="text-sm font-semibold">Filters</span>
+            </div>
+
+            {/* Urgency filter */}
+            <div className="mb-4">
+              <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">Urgency</p>
+              <div className="space-y-1.5">
+                {URGENCIES.map(u => (
+                  <button key={u} onClick={() => handleUrgencyChange(u)}
+                    className={`w-full text-left px-3 py-1.5 rounded-lg text-sm transition-all flex items-center gap-2
+                      ${urgency === u ? "bg-primary/15 text-primary font-medium" : "text-muted-foreground hover:bg-muted/50"}`}>
+                    {u === "High" && <span className="h-2 w-2 rounded-full bg-red-500 shrink-0" />}
+                    {u === "Medium" && <span className="h-2 w-2 rounded-full bg-amber-500 shrink-0" />}
+                    {u === "Low" && <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />}
+                    {u === "All" && <span className="h-2 w-2 rounded-full bg-muted-foreground shrink-0" />}
+                    {u}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Verified only toggle */}
+            <div className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border/50">
+              <span className="text-sm font-medium">Verified Only</span>
+              <button
+                onClick={handleVerifiedToggle}
+                className={`h-5 w-9 rounded-full transition-all relative ${verifiedOnly ? "bg-emerald-500" : "bg-muted"}`}>
+                <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all ${verifiedOnly ? "left-4" : "left-0.5"}`} />
+              </button>
+            </div>
+          </div>
+        </aside>
+
+        {/* ── Main Feed ───────────────────────────────────────────────────── */}
+        <div className="lg:col-span-3 space-y-5">
+
+          {/* Category chips */}
+          <div className="flex gap-2 flex-wrap">
+            {CATEGORIES.map(c => (
+              <button key={c} onClick={() => handleCategoryChange(c)}
+                className={`cat-chip ${category === c ? "active" : ""}`}>
+                {CATEGORY_ICONS[c]} {c}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold">
+              {searchQ ? "Search Results" : "Intelligence Feed"}
+              <span className="ml-2 text-sm font-normal text-muted-foreground">({tips.length})</span>
+            </h2>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+              Smart Ranked
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="space-y-4">
+              {[1,2,3].map(i => (
+                <div key={i} className="glass-card rounded-2xl p-6 animate-pulse space-y-3">
+                  <div className="flex gap-2"><div className="h-5 w-16 bg-muted rounded-full" /><div className="h-5 w-24 bg-muted rounded-full" /></div>
+                  <div className="h-6 w-3/4 bg-muted rounded-lg" />
+                  <div className="h-4 w-full bg-muted rounded" />
+                  <div className="h-4 w-2/3 bg-muted rounded" />
+                </div>
+              ))}
+            </div>
+          ) : tips.length === 0 ? (
+            <div className="glass-card rounded-2xl p-16 text-center">
+              <Search className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+              <p className="font-semibold text-muted-foreground">No intelligence found</p>
+              <p className="text-sm text-muted-foreground/60 mt-1">Try different filters or search terms</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {tips.map((tip, idx) => {
+                const verifiedCount  = tip.verifications.filter((v: any) => v.status === "Verified").length
+                const fakeCount      = tip.verifications.filter((v: any) => v.status === "Fake").length
+                const myVote         = verifiedByMe.get(tip.id)
+                const isExpiredSoon  = tip.expiry_date && (new Date(tip.expiry_date).getTime() - Date.now()) / 3600000 < 24
+                const urgencyBorder  = tip.urgency === "High" ? "#ef4444" : tip.urgency === "Medium" ? "#f59e0b" : "transparent"
+
+                return (
+                  <div key={tip.id}
+                    className={`glass-card rounded-2xl overflow-hidden tip-card animate-fade-in-up stagger-${Math.min(idx + 1, 5)}`}
+                    style={{ borderLeft: `3px solid ${urgencyBorder}` }}
+                  >
+                    {/* Card Header */}
+                    <div className="p-5 pb-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 space-y-2">
+                          {/* Chips */}
+                          <div className="flex flex-wrap gap-2">
+                            {tip.urgency === "High" && (
+                              <span className="urgency-high inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold">
+                                🔥 High Priority
+                              </span>
+                            )}
+                            {tip.urgency === "Medium" && (
+                              <span className="urgency-medium inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold">
+                                ⚡ Medium Priority
+                              </span>
+                            )}
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border border-border bg-muted/40 text-muted-foreground">
+                              {CATEGORY_ICONS[tip.category]} {tip.category}
+                            </span>
+                            {tip.target_year && (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border border-primary/20 bg-primary/5 text-primary">
+                                {tip.target_year}
+                              </span>
+                            )}
+                            {tip.expiry_date && (
+                              <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono border
+                                ${isExpiredSoon ? "border-red-500/30 bg-red-500/8 text-red-400" : "border-border bg-muted/30 text-muted-foreground"}`}>
+                                <Clock className="h-3 w-3" />
+                                <CountdownTimer expiryDate={tip.expiry_date} />
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Title */}
+                          <h3 className="text-lg font-bold leading-snug">{tip.title}</h3>
+                        </div>
+
+                        {/* Bookmark */}
+                        <button
+                          onClick={() => handleBookmark(tip.id)}
+                          title="Save opportunity"
+                          className={`p-2 rounded-lg transition-all shrink-0 ${savedIds.has(tip.id) ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-primary hover:bg-primary/10"}`}>
+                          <Bookmark className="h-4 w-4" fill={savedIds.has(tip.id) ? "currentColor" : "none"} />
+                        </button>
                       </div>
-                      <CardTitle className="text-xl group-hover:text-primary transition-colors">{tip.title}</CardTitle>
                     </div>
-                    <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary" onClick={() => handleBookmark(tip.id)}>
-                      <Bookmark className="w-5 h-5" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-muted-foreground leading-relaxed">
-                    {tip.description}
-                  </p>
-                  
-                  {/* Why am I seeing this? */}
-                  <div className="bg-muted/30 p-3 rounded-md border text-xs flex items-start gap-2 text-muted-foreground">
-                    <Info className="w-4 h-4 shrink-0 mt-0.5" />
-                    <div>
-                      <span className="font-semibold block mb-1">Why you're seeing this:</span>
-                      <ul className="list-disc pl-4 space-y-0.5">
-                        {tip.target_year && <li>Relevant to {tip.target_year} students</li>}
-                        <li>Verified by {verifiedCount} peers</li>
-                        {tip.urgency === "High" && <li>High urgency deadline approaching</li>}
-                      </ul>
+
+                    {/* Body */}
+                    <div className="px-5 pb-4 space-y-4">
+                      <p className="text-sm text-muted-foreground leading-relaxed">{tip.description}</p>
+
+                      {/* Tags */}
+                      {tip.tags && (
+                        <div className="flex flex-wrap gap-1.5">
+                          {tip.tags.split(",").map((tag: string) => (
+                            <span key={tag} className="px-2 py-0.5 rounded-md bg-muted/50 border border-border/50 text-xs text-muted-foreground">
+                              #{tag.trim()}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Explainability box */}
+                      <div className="bg-primary/5 border border-primary/10 rounded-xl p-3 flex items-start gap-2.5">
+                        <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                        <div className="text-xs text-muted-foreground">
+                          <p className="font-semibold text-primary mb-1.5">Why you're seeing this:</p>
+                          <ul className="space-y-0.5 list-disc list-inside">
+                            {tip.target_year && <li>Targeted at {tip.target_year} students</li>}
+                            {verifiedCount > 0 && <li>Verified by {verifiedCount} peers in your network</li>}
+                            {tip.urgency === "High" && <li>High urgency — deadline approaching</li>}
+                            {tip.author?.credibility_score >= 80 && <li>Posted by a highly trusted contributor ({tip.author.credibility_score}/100)</li>}
+                            {fakeCount > 0 && <li className="text-amber-400">⚠ {fakeCount} peer(s) flagged this — verify carefully</li>}
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="px-5 py-3.5 border-t border-border/50 bg-muted/10 flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between">
+                      {/* Author */}
+                      <div className="flex items-center gap-2">
+                        <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold">
+                          {tip.author?.name?.charAt(0)}
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium">{tip.author?.name}</span>
+                          <TrustBadge score={tip.author?.credibility_score ?? 50} />
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {verifiedCount > 0 && (
+                          <span className="verified-chip inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold">
+                            <ShieldCheck className="h-3 w-3" /> {verifiedCount} Verified
+                          </span>
+                        )}
+
+                        {myVote ? (
+                          <span className="px-3 py-1 rounded-full text-xs font-medium bg-muted/50 text-muted-foreground border border-border">
+                            You: {myVote}
+                          </span>
+                        ) : (
+                          <>
+                            <button onClick={() => handleVerify(tip.id, "Verified")}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 hover:bg-emerald-500/25 transition-all">
+                              <ShieldCheck className="h-3 w-3" /> Verify
+                            </button>
+                            <button onClick={() => handleVerify(tip.id, "Outdated")}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition-all">
+                              <Clock className="h-3 w-3" /> Outdated
+                            </button>
+                            <button onClick={() => handleVerify(tip.id, "Fake")}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-all">
+                              <AlertTriangle className="h-3 w-3" /> Fake
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </CardContent>
-                <CardFooter className="pt-3 border-t bg-muted/20 flex flex-col sm:flex-row gap-4 sm:gap-0 justify-between items-center">
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground w-full sm:w-auto">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-foreground">{tip.author.name}</span>
-                      {badge && <Badge variant="outline" className="text-[10px] py-0 h-4 border-primary/20 text-primary bg-primary/5">{badge}</Badge>}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                    <Badge variant="verified" className="cursor-default">
-                      <ShieldCheck className="w-3 h-3 mr-1" /> {verifiedCount} Verified
-                    </Badge>
-                    <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => handleVerify(tip.id)}>Verify Tip</Button>
-                  </div>
-                </CardFooter>
-              </Card>
-            )
-          })
-        )}
+                )
+              })}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
