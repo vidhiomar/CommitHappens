@@ -233,7 +233,7 @@ def seed_data():
         u.credibility_score = min(100, u.credibility_score + 4)
     db.commit()
 
-    print("✅ Database seeded with 6 users, 15 tips, 19 verifications, 4 notifications.")
+    print("Database seeded successfully with 6 users, 15 tips, 19 verifications, 4 notifications.")
 
 if __name__ == "__main__":
     seed_data()
