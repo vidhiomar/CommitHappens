@@ -1,96 +1,167 @@
-<div align="center">
-  <img src="https://lucide.dev/api/icon/shield-check?color=%236366f1&size=64" alt="InsiderInfo Logo" />
-  <h1>InsiderInfo</h1>
-  <h3>The Peer-Verified Opportunity Intelligence Network</h3>
-  <p><em>"We convert unspoken institutional knowledge into actionable opportunity intelligence for first-generation students."</em></p>
-</div>
+# InsiderInfo: Peer-Verified Opportunity Intelligence Network
+
+> *"We convert unspoken institutional knowledge into actionable opportunity intelligence for first-generation students."*
+
+[![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Python-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
+[![TailwindCSS](https://img.shields.io/badge/Tailwind-v4-38bdf8?logo=tailwindcss)](https://tailwindcss.com/)
 
 ---
 
-## 🏆 The Problem (The "Invisible Curriculum")
+## 🎯 The Problem — The "Invisible Curriculum"
 
-College success isn't just about grades; it's about access to information. *Who is referring for Google STEP? Which professor takes interns without announcing it? What's the hidden backdoor to the coding club?*
+College success isn't just about grades. *Who is giving referrals for Google STEP? Which professor is quietly taking interns? What's the backdoor into the coding club?*
 
-Currently, this information flows through **exclusive friend circles**. First-generation and unconnected students miss out entirely. 
-
-**InsiderInfo** democratizes this access. We transform informal campus chatter into a structured, verified, and time-sensitive intelligence graph.
+This information flows through **exclusive friend circles**. First-generation and unconnected students miss out entirely. **InsiderInfo** is built to fix that.
 
 ---
 
-## 🔥 Why This Wins (Core USPs)
+## 🏆 What Makes This Different
 
-We didn't build a forum. We built a **Recommendation-Engine-Driven Intelligence Network**.
+We didn't build a forum. We built a **Peer-Verified Intelligence Graph** with a recommendation engine underneath.
 
-* **Hyper-Personalized Intelligence Feed**: A CSE 2nd Year student sees internship referral deadlines. A Mechanical 4th Year sees PSU placement cutoff drops. 
-* **Peer Verification + Trust Graph**: This is our strongest engineering USP. Fake/outdated reporting tanks credibility. Only the most reliable voices rise to the top.
-* **Explainable Recommendation Layer**: We don't just show a tip; we tell the user *why* they are seeing it ("Verified by 18 seniors", "Expiring in 5 hours", "Targeted for your branch").
-* **Smart Feed Ranking Algorithm**: The feed isn't chronological. It uses a custom sorting heuristic: `Score = Credibility Weight + Verification Score + Urgency Bonus - Freshness Decay - Expiry Decay`.
-* **Auto-Expiring Knowledge**: Stale information automatically disappears from the active feed, keeping the platform production-grade and relevant.
-* **Proactive Urgency Engine**: Smart notifications alert users *before* deadlines close ("Google STEP closes in 5 hours").
-
----
-
-## 💻 Technical Architecture & Stack
-
-Built for scale, maintainability, and visual excellence.
-
-### Frontend
-* **Framework**: Next.js 15 / React 19
-* **Styling**: Tailwind CSS v4 + Vanilla CSS (Premium Glassmorphism Design System)
-* **UI/UX**: Vibrant Indigo/Violet Dark Theme, dynamic micro-animations, structured typography (Inter + Sora).
-
-### Backend
-* **Framework**: FastAPI (Python)
-* **Database**: SQLite (Dev) / PostgreSQL via Supabase (Prod)
-* **ORM**: SQLAlchemy
-* **Architecture**: RESTful APIs with Pydantic schema validation. Modular router structure (`tips`, `users`, `verifications`, `notifications`, `analytics`).
+| Feature | Why It Wins |
+|---|---|
+| **Hyper-Personalized Feed** | CSE 2nd Year sees internship referrals; Mech 4th Year sees PSU cutoff drops. Zero irrelevant posts. |
+| **Trust Graph + Verification** | Verify, flag Outdated, or report Fake. Credibility scores auto-update. Top voices rise. |
+| **Explainable Recommendations** | Every card shows *why* it was surfaced: "Verified by 18 peers", "Targeted at your year", "Deadline in 5h". |
+| **Smart Ranking Algorithm** | `Score = Credibility + Verification Bonus + Urgency - Freshness Decay - Expiry Decay` |
+| **Auto-Expiring Intel** | Stale tips disappear from feed. Live countdown timers on every deadline. |
+| **Analytics Dashboard** | Real-time KPIs, contributor leaderboard, category breakdown — judges love this. |
+| **6-Tier Reputation System** | Member → Contributor → Scholarship Guide → Placement Mentor → Trusted Senior → Top Contributor |
 
 ---
 
-## 🚀 The "Perfect Demo" Flow
+## 💻 Tech Stack
 
-1. **The Hook**: Freshman lands on the premium hero section and signs up, selecting their specific Branch and Year.
-2. **Personalization**: They instantly land on a dynamic dashboard filled with intelligence filtered exactly for them.
-3. **The Urgency**: Live countdown timers pulse for opportunities expiring within 24 hours. A notification dot alerts them to a high-priority scholarship.
-4. **The Trust Engine**: A trusted senior submits a hidden internship tip. Another senior clicks "Verify". The author's Credibility Score updates live, and the tip shoots to the top of the feed via the ranking algorithm.
-5. **The Proof**: The Analytics dashboard shows the active heartbeat of the platform—verified tips, category breakdowns, and a live contributor leaderboard.
+**Frontend** — Next.js 15, React 19, Tailwind CSS v4
+- Premium light theme (soft lavender + indigo palette)
+- Glassmorphism cards, staggered animations, live countdown timers
+- Typography: Inter (body) + Sora (headings)
+- Mobile-first responsive with bottom nav on mobile
+
+**Backend** — FastAPI (Python), SQLAlchemy ORM
+- Modular router architecture: `users`, `tips`, `verifications`, `notifications`, `saves`, `analytics`
+- Pydantic schema validation on all endpoints
+- SQLite (dev) → PostgreSQL / Supabase (prod)
+
+---
+
+## 🗂️ Project Structure
+
+```
+CommitHappens/
+├── client/                     # Next.js 15 frontend
+│   └── src/
+│       ├── app/
+│       │   ├── page.tsx              # Premium landing page
+│       │   ├── onboarding/           # Multi-step wizard
+│       │   └── (dashboard)/
+│       │       ├── layout.tsx        # Wired search + mobile nav
+│       │       ├── dashboard/        # Personalized feed + filters
+│       │       ├── submit/           # Tip submission form
+│       │       ├── notifications/    # Grouped, mark-as-read
+│       │       ├── analytics/        # KPIs + leaderboard
+│       │       └── profile/          # Credibility bar + saved items
+│       └── components/
+│           ├── CountdownTimer.tsx    # Live ticking timers
+│           ├── TrustBadge.tsx        # 6-tier badge system
+│           └── CredibilityBar.tsx    # Animated score bar
+└── server/                     # FastAPI backend
+    └── app/
+        ├── main.py             # App entry point
+        ├── models.py           # SQLAlchemy models
+        ├── schemas.py          # Pydantic schemas
+        ├── crud.py             # Business logic + ranking algorithm
+        ├── database.py         # DB session
+        └── routers/
+            ├── tips.py         # Feed, search, archived
+            ├── users.py
+            ├── verifications.py
+            ├── notifications.py
+            ├── saves.py
+            └── analytics.py    # Platform KPIs endpoint
+```
 
 ---
 
 ## ⚙️ Running Locally
 
-### 1. Start the Backend (FastAPI)
+### Backend (FastAPI)
 ```bash
 cd server
-python -m venv venv
-# Windows: .\venv\Scripts\activate
-# Mac/Linux: source venv/bin/activate
+python -m venv .venv
+# Windows: .\.venv\Scripts\activate
+# Mac/Linux: source .venv/bin/activate
 pip install -r requirements.txt
-python seed.py # Seeds the DB with rich, realistic data
+python seed.py          # Seeds 6 users, 15 tips, 19 verifications
 uvicorn app.main:app --reload
 ```
-*Backend runs on `http://localhost:8000`*
+Backend: `http://localhost:8000` · Docs: `http://localhost:8000/docs`
 
-### 2. Start the Frontend (Next.js)
+### Frontend (Next.js)
 ```bash
 cd client
 npm install
 npm run dev
 ```
-*Frontend runs on `http://localhost:3000` (or 3001 if 3000 is occupied).*
+Frontend: `http://localhost:3000`
 
 ---
 
-## 🎯 Hackathon Checklist Accomplished
+## 🔗 Key API Endpoints
 
-- [x] **Real backend APIs** (FastAPI)
-- [x] **Personalized feed** (Branch/Year filtering)
-- [x] **Verification system** (Verify, Outdated, Fake reporting)
-- [x] **Credibility engine** (Auto-updating trust graph & badges)
-- [x] **Beautiful UI** (Modern glassmorphism, animated gradients)
-- [x] **Smart feed ranking algorithm** (Urgency + Trust math)
-- [x] **Explainable recommendations** ("Why am I seeing this?")
-- [x] **Analytics dashboard** (Live platform KPIs & Leaderboard)
-- [x] **Auto-expiring tips** (Live countdown timers)
+| Method | Route | Description |
+|---|---|---|
+| `POST` | `/users/` | Register / login user |
+| `GET` | `/tips/` | Personalized ranked feed |
+| `GET` | `/tips/search?q=` | Full-text search |
+| `POST` | `/verifications/` | Verify, flag outdated, report fake |
+| `GET` | `/notifications/{user_id}` | User notification inbox |
+| `PATCH` | `/notifications/{id}/read` | Mark notification as read |
+| `POST` | `/saves/` | Bookmark an opportunity |
+| `GET` | `/analytics/` | Platform KPIs + leaderboard |
+
+---
+
+## 🎬 Perfect Demo Flow
+
+```
+1. Land on homepage → Premium hero with live stats bar
+2. Click "Get Started" → Multi-step onboarding wizard
+3. Choose CSE · 2nd Year → Preview of what you'll see appears
+4. Enter Dashboard → Personalized feed, live countdown timers, expiring banner
+5. Click "Verify" on a tip → Credibility score updates live
+6. Check Notifications → Grouped alerts, mark-as-read
+7. Visit Analytics → KPIs, top contributor leaderboard, category breakdown
+8. Visit Profile → Animated credibility bar, trust badge tier
+```
+
+---
+
+## 🎯 Hackathon Checklist
+
+**MUST HAVE**
+- [x] Real backend APIs (FastAPI, 6 routers)
+- [x] Live deployment ready (Vercel + Render compatible)
+- [x] Personalized feed (college × branch × year filtering)
+- [x] Verification system (Verify / Outdated / Fake)
+- [x] Credibility engine (auto-updating trust graph)
+- [x] Smart notifications with urgency detection
+- [x] Beautiful UI (premium light theme, glassmorphism)
+
+**HIGH IMPACT**
+- [x] Feed ranking algorithm (trust + urgency + freshness math)
+- [x] Auto-expiring tips with live countdown timers
+- [x] Explainable recommendations ("Why you're seeing this")
+- [x] Analytics / Admin dashboard
+
+**BONUS WOW**
+- [x] 6-tier contributor reputation badges
+- [x] Full-text search across tips + tags
+- [x] Mobile-first with bottom nav
+- [x] Rich seeded database (15 realistic tips, ready for demo)
+
+---
 
 *Built to democratize access to the hidden rules of college success.*
