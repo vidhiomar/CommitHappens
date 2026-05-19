@@ -4,12 +4,10 @@ from app.database import engine
 from app import models
 from app.routers import users, tips, verifications, notifications, saves, analytics
 
-# Create db tables
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Insider Knowledge System API")
 
-# Setup CORS for frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -18,12 +16,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(users.router)
-app.include_router(tips.router)
-app.include_router(verifications.router)
-app.include_router(notifications.router)
-app.include_router(saves.router)
-app.include_router(analytics.router)
+API_PREFIX = "/api/v1"
+
+app.include_router(users.router, prefix=API_PREFIX)
+app.include_router(tips.router, prefix=API_PREFIX)
+app.include_router(verifications.router, prefix=API_PREFIX)
+app.include_router(notifications.router, prefix=API_PREFIX)
+app.include_router(saves.router, prefix=API_PREFIX)
+app.include_router(analytics.router, prefix=API_PREFIX)
 
 @app.get("/")
 def read_root():
