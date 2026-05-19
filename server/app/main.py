@@ -2,27 +2,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine
 from app import models
+from app.seed import seed_data
 from app.routers import users, tips, verifications, notifications, saves, analytics
 
+# Create db tables
 models.Base.metadata.create_all(bind=engine)
-from app.database import SessionLocal
-from app.models import Tip
 
-db = SessionLocal()
-
-if db.query(Tip).count() == 0:
-    sample_tip = Tip(
-        title="Google SWE Internship OA",
-        content="OA usually focuses on graphs + DP. Medium difficulty.",
-        company="Google",
-        author_id=1,
-        credibility_score=92
-    )
-
-    db.add(sample_tip)
-    db.commit()
-
-db.close()
+# Seed demo data
+seed_data()
 
 app = FastAPI(title="Insider Knowledge System API")
 
